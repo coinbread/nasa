@@ -6,12 +6,24 @@ const loader = document.querySelector('.loader');
 
 // NASA API 
 
-const count = 5;
+const count = 10;
 const apiKey = 'QnUV5v7dwpBRE3DvMKJwmTuqDbS1l1tPeojxhvPa'; //My personal API key for 1000 request
 const apiURL = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&count=${count}`;
 
 let resultsArray = [];
 let favorites = {};
+
+function showContent(page) {
+    window.scrollTo({ top: 0, behavior: 'instant'});
+    if( page === 'results') {
+        resultsNav.classList.remove('hidden');
+        favoritesNav.classList.add('hidden');
+    } else {
+        resultsNav.classList.add('hidden');
+        favoritesNav.classList.remove('hidden');
+    }
+    loader.classList.add('hidden');
+}
 
 function createDOMNodes(page) {
     
@@ -77,18 +89,20 @@ function updateDOM(page) {
     //Get favorites from localStorage
     if (localStorage.getItem('nasaFavorites')) {
         favorites = JSON.parse(localStorage.getItem('nasaFavorites'));
-        // console.log('favorites', favorites);
     }
     imagesContainer.textContent = '';
     createDOMNodes(page);
+    showContent(page);
 }
 
 // Get 10 images from NASA API
 async function getNasaPictures() {
+    // Show Loader
+    loader.classList.remove('hidden');
     try {
         const response = await fetch(apiURL);
         resultsArray = await response.json();
-        updateDOM('favorites');
+        updateDOM('results');
     } catch (error) {
         // catch error here
         console.log('some error',error);
@@ -97,9 +111,7 @@ async function getNasaPictures() {
 
 // Add results to favorites
 function saveFavorite(itemUrl) {
-    // console.log('res.url', itemUrl);
     //Loop Through res Array to select Favorite
-
     resultsArray.forEach((item) => {
         if ( item.url.includes(itemUrl) && !favorites[itemUrl]){
             favorites[itemUrl] = item;
@@ -116,9 +128,7 @@ function saveFavorite(itemUrl) {
 
 // Remove results from favorites
 function removeFavorite(itemUrl) {
-    // console.log('res.url', itemUrl);
-    //Loop Through res Array to select Favorite
-
+    //object to remove Favorite
     if( favorites[itemUrl]) {
         delete favorites[itemUrl];
         //Update favorites in localStorage
